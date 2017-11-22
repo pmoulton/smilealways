@@ -20,6 +20,9 @@ function detectRedirect(details) {
     if (domain.includes("amazon.de")) {
     	amazonurl = "www.amazon.de";
     	country = "de";
+    } else if (domain.includes("amazon.co.uk")) {
+      amazonurl = "www.amazon.co.uk";
+      country = "uk";
     }
 
     var https = "https://";
@@ -43,6 +46,11 @@ function detectRedirect(details) {
                + "|(login.amazon.de)"
                + "|(payments.amazon.de)"
                + "|(amazon.de/clouddrive)"
+               + "|(aws.amazon.co.uk)"
+               + "|(read.amazon.co.uk)"
+               + "|(login.amazon.co.uk)"
+               + "|(payments.amazon.co.uk)"
+               + "|(amazon.co.uk/clouddrive)"
                + "|(http://)"; //all Amazon pages now redirect to HTTPS, also fixes conflict with HTTPS Everywhere extension
 
     // Don't try and redirect pages that are in our filter
@@ -57,6 +65,8 @@ function redirectToSmile(scheme, amazonurl, url, country) {
     var smileurl = "smile.amazon.com";
     if (country === "de") {
     	smileurl = "smile.amazon.de";
+    } else if (country === "uk") {
+      smileurl = "smile.amazon.co.uk";
     }
     return {
         // redirect to amazon smile append the rest of the url
