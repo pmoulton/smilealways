@@ -2,65 +2,59 @@
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
     return detectRedirect(details);
 }, {
-    urls : ["<all_urls>"],
-    types: ["main_frame","sub_frame"]
+    urls: ["<all_urls>"],
+    types: ["main_frame", "sub_frame"]
 }, ["blocking"]);
 
-
 function detectRedirect(details) {
-    var url = details.url;
-
-    if (url == null) {
-        return;
+    url = details.url
+    if (!shouldRedirect(url)) {
+        return
     }
-
-    var domain = url_domain(url);
-    var amazonurl = "www.amazon.com";
-    var country = "com";
-    if (domain.includes("amazon.de")) {
-    	amazonurl = "www.amazon.de";
-    	country = "de";
-    } else if (domain.includes("amazon.co.uk")) {
-      amazonurl = "www.amazon.co.uk";
-      country = "uk";
-    }
-
-    var https = "https://";
-    // ignore links with these strings in them
-    var filter = "(sa-no-redirect=)"
-               + "|(redirect=true)"
-               + "|(redirect.html)"
-               + "|(r.html)"
-               + "|(f.html)"
-               + "|(/dmusic/cloudplayer)"
-               + "|(/photos)"
-               + "|(/wishlist)"
-               + "|(/clouddrive)"
-               + "|(/ap/)"
-               + "|(aws.amazon.)"
-               + "|(read.amazon.)"
-               + "|(login.amazon.)"
-               + "|(payments.amazon.)"
-               + "|(http://)"; //all Amazon pages now redirect to HTTPS, also fixes conflict with HTTPS Everywhere extension
-
-    // Don't try and redirect pages that are in our filter
-    if (url.match(filter) != null) {
-        return;
-    }
-
-    return redirectToSmile(https, amazonurl, url, country);
+    return redirectToSmile(url);
 }
 
-function redirectToSmile(scheme, amazonurl, url, country) {
-    var smileurl = "smile.amazon.com";
-    if (country === "de") {
-    	smileurl = "smile.amazon.de";
-    } else if (country === "uk") {
-      smileurl = "smile.amazon.co.uk";
+function shouldRedirect(url) {
+    if (url === null) {
+        return;
     }
+    // Ignore links with these strings in them
+    var filter = "(sa-no-redirect=)"
+        + "|(redirect=true)"
+        + "|(redirect.html)"
+        + "|(r.html)"
+        + "|(f.html)"
+        + "|(/dmusic/cloudplayer)"
+        + "|(/photos)"
+        + "|(/wishlist)"
+        + "|(/clouddrive)"
+        + "|(/ap/)"
+        + "|(aws.amazon.)"
+        + "|(read.amazon.)"
+        + "|(login.amazon.)"
+        + "|(payments.amazon.)"
+        // All Amazon pages now redirect to HTTPS, also fixes conflict with HTTPS Everywhere extension
+        + "|(http://)";
+    return url.match(filter) === null;
+}
+
+function redirectToSmile(url) {
+    var domain = url_domain(url);
+
+    if (domain.includes("amazon.de")) {
+        var smileurl = "smile.amazon.de";
+        var amazonurl = "www.amazon.de"
+    } else if (domain.includes("amazon.co.uk")) {
+        var smileurl = "smile.amazon.co.uk";
+        var amazonurl = "www.amazon.co.uk"
+    } else {
+        var smileurl = "smile.amazon.com";
+        var amazonurl = "www.amazon.com"
+    }
+
     return {
         // redirect to amazon smile append the rest of the url
-        redirectUrl : scheme + smileurl + getRelativeRedirectUrl(amazonurl, url)
+        redirectUrl: "https://" + smileurl + getRelativeRedirectUrl(amazonurl, url)
     };
 }
 
@@ -81,7 +75,7 @@ function getRelativeRedirectUrl(amazonurl, url) {
 }
 
 function url_domain(data) {
-  var    a      = document.createElement('a');
-         a.href = data;
-  return a.hostname;
+    var a = document.createElement('a');
+    a.href = data;
+    return a.hostname;
 }
